@@ -1,0 +1,186 @@
+---
+import Button from '../components/Button.astro';
+import Spinner from '../components/Spinner.astro';
+import PageLayout from '../layout/PageLayout.astro';
+---
+
+<PageLayout title="Registro de Intranet">
+  <div class="flex items-center justify-center min-h-screen py-10">
+    <form
+      id="signup-form"
+      class="p-8 rounded-lg border border-gray-300 dark:border-gray-600 w-full max-w-sm flex flex-col gap-6 bg-white dark:bg-gray-800"
+    >
+      <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 text-center">Crear Cuenta de Empleado</h2>
+
+      <div class="relative flex flex-col gap-1">
+        <label for="name" class="text-sm font-medium text-gray-700 dark:text-gray-300">Nombre Completo</label>
+        <input
+          type="text"
+          id="name"
+          class="w-full border border-gray-300 dark:border-gray-600 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+          placeholder="Ej. Gabriel Garcia"
+        />
+      </div>
+
+      <div class="relative flex flex-col gap-1">
+        <label for="email" class="text-sm font-medium text-gray-700 dark:text-gray-300">Correo Corporativo</label>
+        <div class="relative">
+          <input
+            type="email"
+            id="email"
+            class="w-full border border-gray-300 dark:border-gray-600 rounded-md py-2 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            placeholder="tu@empresa.com"
+          />
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <ion-icon id="email-check" name="checkmark-circle" class="text-green-500 text-xl hidden"></ion-icon>
+            <ion-icon id="email-cross" name="close-circle" class="text-red-500 text-xl hidden"></ion-icon>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative flex flex-col gap-1">
+        <label for="department" class="text-sm font-medium text-gray-700 dark:text-gray-300">Departamento</label>
+        <select
+          id="department"
+          class="w-full border border-gray-300 dark:border-gray-600 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white transition-colors"
+        >
+          <option value="">Selecciona uno...</option>
+          <option value="Ventas">Ventas</option>
+          <option value="IT / Sistemas">IT / Sistemas</option>
+          <option value="Recursos Humanos">Recursos Humanos</option>
+          <option value="Administración">Administración</option>
+        </select>
+      </div>
+
+      <div class="relative flex flex-col gap-1">
+        <label for="password" class="text-sm font-medium text-gray-700 dark:text-gray-300">Contraseña</label>
+        <div class="relative">
+          <input
+            type="password"
+            id="password"
+            class="w-full border border-gray-300 dark:border-gray-600 rounded-md py-2 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            placeholder="••••••••"
+          />
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <ion-icon id="password-check" name="checkmark-circle" class="text-green-500 text-xl hidden"></ion-icon>
+            <ion-icon id="password-cross" name="close-circle" class="text-red-500 text-xl hidden"></ion-icon>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Min 8 caracteres, Mayúscula, Número y Especial.</p>
+      </div>
+
+      <button
+        type="submit"
+        class="flex justify-center items-center gap-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-colors cursor-pointer"
+      >
+        Registrar Empleado
+        <Spinner color="fill-blue-800" />
+      </button>
+    </form>
+  </div>
+</PageLayout>
+
+<script>
+  import { z } from 'astro/zod';
+  import ky, { HTTPError } from 'ky';
+  import { showToast } from '../components/notification/notification';
+
+  // 1. Actualizamos el Schema de Zod (Frontend) para incluir name y department
+  const formUserSchema = z.object({
+    name: z.string().min(3, { message: 'Nombre obligatorio' }),
+    email: z.string().email({ message: 'Email inválido' }),
+    password: z.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\S]{8,}$/, {
+      message: 'La contraseña no cumple los requisitos',
+    }),
+    department: z.string().min(2, { message: 'Selecciona un departamento' }),
+  });
+
+  // Elementos del DOM
+  const form = document.querySelector('#signup-form');
+  const nameInput = document.querySelector('#name');
+  const emailInput = document.querySelector('#email');
+  const departmentInput = document.querySelector('#department');
+  const passwordInput = document.querySelector('#password');
+  const spinner = document.querySelector('#spinner');
+
+  // Función de validación visual (mantenemos tu lógica)
+  function validateField(inputElement, success) {
+    const nextDiv = inputElement.nextElementSibling;
+    if (!nextDiv || !nextDiv.children.length) return; // Evitar error en inputs sin iconos
+    
+    const checkIcon = nextDiv.children[0];
+    const crossIcon = nextDiv.children[1];
+    const value = inputElement.value;
+
+    if (value.length === 0) {
+      checkIcon?.classList.add('hidden');
+      crossIcon?.classList.add('hidden');
+      return;
+    }
+
+    if (success) {
+      checkIcon?.classList.remove('hidden');
+      crossIcon?.classList.add('hidden');
+    } else {
+      checkIcon?.classList.add('hidden');
+      crossIcon?.classList.remove('hidden');
+    }
+  }
+
+  // Eventos de validación en tiempo real
+  emailInput.addEventListener('input', () => {
+    const { success } = formUserSchema.pick({ email: true }).safeParse({ email: emailInput.value });
+    validateField(emailInput, success);
+  });
+
+  passwordInput.addEventListener('input', () => {
+    const { success } = formUserSchema.pick({ password: true }).safeParse({ password: passwordInput.value });
+    validateField(passwordInput, success);
+  });
+
+  // Manejo del Submit
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Validamos los 4 campos
+    const data = {
+      name: nameInput.value,
+      email: emailInput.value,
+      password: passwordInput.value,
+      department: departmentInput.value,
+    };
+
+    const { success, error } = formUserSchema.safeParse(data);
+
+    if (success) {
+      try {
+        spinner?.classList.remove('hidden');
+        
+        // Enviamos el payload completo al Backend
+        const response = await ky.post('/api/user', { json: data }).json();
+        
+        showToast({
+          type: 'success',
+          text: `¡Éxito! Verifica el correo enviado a ${response.email}`,
+        });
+
+        form.reset(); // Limpiar formulario tras éxito
+
+      } catch (err) {
+        if (err instanceof HTTPError) {
+          const errorData = await err.response.json();
+          showToast({ type: 'error', text: errorData.error || 'Error al registrar' });
+        }
+      } finally {
+        spinner?.classList.add('hidden');
+      }
+    } else {
+      // Si hay error, mostramos alerta
+      const fieldErrors = error.flatten().fieldErrors;
+      showToast({ 
+        type: 'error', 
+        text: 'Por favor, rellena todos los campos correctamente.' 
+      });
+    }
+  });
+</script>

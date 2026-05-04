@@ -1,0 +1,6 @@
+{
+   // Linter
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "prettier.requireConfig": true,
+    "editor.codeActionsOnSave": {"source.fixAll.prettier": "explicit", "source.fixAll.eslint": "explicit"},
+}

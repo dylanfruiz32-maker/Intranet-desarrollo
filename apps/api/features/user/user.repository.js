@@ -1,0 +1,77 @@
+import db from '../../db/index.js';
+
+/** @typedef {import('./user.schemas.js').User} User */
+
+/**
+ * Crea un usuario en la base de datos para la intranet
+ * @param {Object} payload
+ * @param {string} payload.name - Nombre completo del empleado
+ * @param {string} payload.email - El correo del usuario
+ * @param {string} payload.passwordHash - La contraseña encriptada
+ * @param {string} payload.department - Departamento de la empresa
+ * @returns {Promise<User>} El usuario creado
+ */
+const createUser = async ({ name, email, passwordHash, department }) => {
+  const createUserQuery = db.prepare(`
+    INSERT INTO users (name, email, password_hash, department)
+    VALUES (?, ?, ?, ?) RETURNING *
+  `);
+  
+  const createdUser = createUserQuery.get(name, email, passwordHash, department);
+  return createdUser;
+};
+
+/**
+ * Crea un usuario en la base de datos
+ * @param {User['id']} id - El id del usuario a eliminar
+ * @returns {void}
+ */
+const deleteUserById = (id) => {
+  const deleteUserQuery = db.prepare('DELETE FROM users WHERE id = ?');
+  deleteUserQuery.run(id);
+};
+
+/**
+ * Crea un usuario en la base de datos
+ * @param {User['email']} email - El correo del usuario
+ * @returns {User} El usuario encontrado
+ */
+const findUserByEmail = (email) => {
+  const findUserQuery = db.prepare('SELECT * FROM users WHERE email = ?');
+  const user = findUserQuery.get(email);
+  return user;
+};
+
+/**
+ * Obtener todos los usuarios
+ * @returns {User[]} Los usuarios encontrados
+ */
+const findUsers = () => {
+  const findUsersQuery = db.prepare('SELECT * FROM users');
+  const users = findUsersQuery.all();
+  return users;
+};
+
+/**
+ * Actualiza la propiedad del email de los usuarios
+ * @param {string} Id - El id del usuario a actualizar
+ * @returns {void}
+ */
+const updateEmailVerify = (id) => {
+  const updateEmailVerifyQuery = db.prepare(`
+    UPDATE users 
+    SET email_verified = 1
+    WHERE id = ?
+  `);
+  updateEmailVerifyQuery.run(id);
+};
+
+const userRepository = {
+  createUser,
+  deleteUserById,
+  findUserByEmail,
+  findUsers,
+  updateEmailVerify,
+};
+
+export default userRepository;
