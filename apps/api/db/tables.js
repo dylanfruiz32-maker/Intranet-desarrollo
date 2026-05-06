@@ -5,9 +5,9 @@ import db from './index.js';
  * @returns {void}
  */
 const createUsersTable = async () => {
-  const statement = db.prepare(`
+  await db.query(`
     CREATE TABLE users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
       name TEXT NOT NULL,
       email TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
@@ -15,7 +15,6 @@ const createUsersTable = async () => {
       email_verified BOOLEAN DEFAULT false
     )
   `);
-  statement.run();
   console.log('Tabla de usuarios creada!');
 };
 
@@ -24,16 +23,15 @@ const createUsersTable = async () => {
  * @returns {void}
  */
 const createContactsTable = async () => {
-  const statement = db.prepare(`
+await db.query(`
     CREATE TABLE contacts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
       name TEXT NOT NULL,
       phone TEXT NOT NULL,
       user_id INTEGER NOT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id)
     )
   `);
-  statement.run();
   console.log('Tabla de contactos creada!');
 };
 
@@ -42,15 +40,14 @@ const createContactsTable = async () => {
  * @returns {void}
  */
 const createSessionTable = async () => {
-  const statement = db.prepare(`
+await db.query(`
     CREATE TABLE sessions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
       jwtid TEXT UNIQUE NOT NULL,
       user_id INTEGER NOT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id)
     )
   `);
-  statement.run();
   console.log('Tabla de sesiones creada!');
 };
 
@@ -59,9 +56,9 @@ const createSessionTable = async () => {
  * @returns {void}
  */
 const resetDb = async () => {
-  db.prepare('DROP TABLE IF EXISTS contacts').run();
-  db.prepare('DROP TABLE IF EXISTS sessions').run();
-  db.prepare('DROP TABLE IF EXISTS users').run();
+  await db.query('DROP TABLE IF EXISTS contacts');
+  await db.query('DROP TABLE IF EXISTS sessions');
+  await db.query('DROP TABLE IF EXISTS users');
   console.log('Tablas eliminadas');
 };
 
@@ -71,10 +68,15 @@ const resetDb = async () => {
  * @description Esta función se encarga de crear las tablas de la base de datos, primero elimina las tablas existentes para evitar errores de tablas ya existentes, luego crea las tablas necesarias para la aplicación.
  */
 export const createTables = async () => {
+  await db.connect();
+
   await resetDb();
   await createUsersTable();
   await createContactsTable();
   await createSessionTable();
+
+  await db.end();
+  process.exit(1);
   console.log('Tablas creadas');
 };
 

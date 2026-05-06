@@ -81,6 +81,7 @@ import PageLayout from '../layout/PageLayout.astro';
 </PageLayout>
 
 <script>
+  // Validacion Regex Variables
   import { z } from 'astro/zod';
   import ky, { HTTPError } from 'ky';
   import { showToast } from '../components/notification/notification';
@@ -107,7 +108,6 @@ import PageLayout from '../layout/PageLayout.astro';
   function validateField(inputElement, success) {
     const nextDiv = inputElement.nextElementSibling;
     if (!nextDiv || !nextDiv.children.length) return; // Evitar error en inputs sin iconos
-    
     const checkIcon = nextDiv.children[0];
     const crossIcon = nextDiv.children[1];
     const value = inputElement.value;
@@ -135,52 +135,68 @@ import PageLayout from '../layout/PageLayout.astro';
 
   passwordInput.addEventListener('input', () => {
     const { success } = formUserSchema.pick({ password: true }).safeParse({ password: passwordInput.value });
+    console.log(success);
     validateField(passwordInput, success);
   });
 
   // Manejo del Submit
   form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    // Validamos los 4 campos
-    const data = {
-      name: nameInput.value,
-      email: emailInput.value,
-      password: passwordInput.value,
-      department: departmentInput.value,
-    };
+  const data = {
+    name: nameInput.value,
+    email: emailInput.value,
+    password: passwordInput.value,
+    department: departmentInput.value,
+  };
 
-    const { success, error } = formUserSchema.safeParse(data);
+  // 1. Validar con el Schema (Asegúrate de actualizar formUserSchema)
+  const { success, error } = formUserSchema.safeParse(data);
 
-    if (success) {
-      try {
-        spinner?.classList.remove('hidden');
-        
-        // Enviamos el payload completo al Backend
-        const response = await ky.post('/api/user', { json: data }).json();
-        
-        showToast({
-          type: 'success',
-          text: `¡Éxito! Verifica el correo enviado a ${response.email}`,
-        });
-
-        form.reset(); // Limpiar formulario tras éxito
-
-      } catch (err) {
-        if (err instanceof HTTPError) {
-          const errorData = await err.response.json();
-          showToast({ type: 'error', text: errorData.error || 'Error al registrar' });
-        }
-      } finally {
-        spinner?.classList.add('hidden');
-      }
-    } else {
-      // Si hay error, mostramos alerta
-      const fieldErrors = error.flatten().fieldErrors;
-      showToast({ 
-        type: 'error', 
-        text: 'Por favor, rellena todos los campos correctamente.' 
+  if (success) {
+    try {
+      spinner?.classList.remove('hidden');
+      
+      // 2. Usar ky para el POST
+      const response = await ky.post('/api/user', { json: data }).json();
+      
+      showToast({
+        type: 'success',
+        text: `¡Éxito! Verifica el correo enviado a ${response.email}`,
       });
+
+      form.reset(); 
+
+    } catch (err) {
+      // 3. Manejo de errores robusto
+      let message = 'Error al registrar';
+      
+      if (err instanceof HTTPError) {
+        try {
+          // Intentamos obtener el error del backend
+          const errorData = await err.response.json();
+          message = errorData.error || message;
+        } catch (parseError) {
+          // Si el JSON falla, usamos el mensaje de estado HTTP
+          message = `Error ${err.response.status}: ${err.response.statusText}`;
+          console.log(parseError);
+          
+        }
+      }
+      
+      showToast({ type: 'error', text: message });
+    } finally {
+      spinner?.classList.add('hidden');
     }
-  });
+  } else {
+    // 4. Mostrar errores de validación de Zod
+    const fieldErrors = error.flatten().fieldErrors;
+    console.log(fieldErrors); // Para que veas qué campo está fallando
+    
+    showToast({ 
+      type: 'error', 
+      text: 'Por favor, rellena todos los campos correctamente.' 
+    });
+  }
+});
 </script>

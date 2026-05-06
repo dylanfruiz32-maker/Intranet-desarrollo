@@ -13,7 +13,7 @@ contactRouter.post('/', async (req, res) => {
   const body = createContactRouteSchema.body.parse(req.body);
 
   // 2. Guardarlo en db
-  const createdContact = contactRepository.createContact({
+  const createdContact = await contactRepository.createContact({
     name: body.name,
     phone: body.phone,
     userId: req.user.id,
@@ -26,7 +26,7 @@ contactRouter.post('/', async (req, res) => {
 // Ruta para obtener los contactos del usuario
 contactRouter.get('/', async (req, res) => {
   // 1. Obtener los contactos en db
-  const contacts = contactRepository.getContacts(req.user.id);
+  const contacts = await contactRepository.getContacts(req.user.id);
 
   // 2. Responder con los contactos
   return res.status(200).json(contacts);
@@ -39,7 +39,7 @@ contactRouter.put('/:id', async (req, res) => {
   const params = updateContactRouteSchema.params.parse(req.params);
 
   // 2. Guardarlo en db
-  const updatedContact = contactRepository.updateContact({
+  const updatedContact = await contactRepository.updateContact({
     id: params.id,
     name: body.name,
     phone: body.phone,
@@ -56,7 +56,7 @@ contactRouter.delete('/:id', async (req, res) => {
   const params = deleteContactRouteSchema.params.parse(req.params);
 
   // 2. Borrarlo en db
-  const deletedContact = contactRepository.deleteContact({
+  const deletedContact = await contactRepository.deleteContact({
     id: params.id,
     userId: req.user.id,
   });

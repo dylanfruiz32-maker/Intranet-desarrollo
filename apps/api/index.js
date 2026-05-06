@@ -8,12 +8,16 @@ import { authenticate } from './features/auth/auth.middlewares.js';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import { handler as ssrHandler } from './dist/server/entry.mjs';
 const app = express();
 const port = 3000;
 
 app.use(cors({ origin: ['http://localhost:4321'] }));
 app.use(express.json());
 app.use(cookieParser());
+
+app.use('/', express.static('./dist/client'));
+app.use(ssrHandler);
 
 app.use('/api/user', userRouter);
 app.use('/api/auth', authRouter);

@@ -12,33 +12,35 @@ import db from '../../db/index.js';
  * @returns {Promise<User>} El usuario creado
  */
 const createUser = async ({ name, email, passwordHash, department }) => {
-  const createUserQuery = db.prepare(`
+  const res = await db.query(
+    `
     INSERT INTO users (name, email, password_hash, department)
-    VALUES (?, ?, ?, ?) RETURNING *
-  `);
+    VALUES ($1, $2, $3, $4) RETURNING *
+  `, 
+    [name, email, passwordHash, department],
+);
   
-  const createdUser = createUserQuery.get(name, email, passwordHash, department);
+  const createdUser = res.rows[0];
   return createdUser;
 };
 
 /**
- * Crea un usuario en la base de datos
+ * Elimina un usuario en la base de datos
  * @param {User['id']} id - El id del usuario a eliminar
  * @returns {void}
  */
-const deleteUserById = (id) => {
-  const deleteUserQuery = db.prepare('DELETE FROM users WHERE id = ?');
-  deleteUserQuery.run(id);
+const deleteUserById = async (id) => {
+await db.query('DELETE FROM users WHERE id = $1 ', [id]);
 };
 
 /**
- * Crea un usuario en la base de datos
+ * Encuentra un usuario en la base de datos
  * @param {User['email']} email - El correo del usuario
  * @returns {User} El usuario encontrado
  */
-const findUserByEmail = (email) => {
-  const findUserQuery = db.prepare('SELECT * FROM users WHERE email = ?');
-  const user = findUserQuery.get(email);
+const findUserByEmail = async (email) => {
+  const res = await db.query('SELECT * FROM users WHERE email = $1',[email]);
+  const user = res.rows[0];
   return user;
 };
 
@@ -46,9 +48,9 @@ const findUserByEmail = (email) => {
  * Obtener todos los usuarios
  * @returns {User[]} Los usuarios encontrados
  */
-const findUsers = () => {
-  const findUsersQuery = db.prepare('SELECT * FROM users');
-  const users = findUsersQuery.all();
+const findUsers = async () => {
+  const res = await db.query('SELECT * FROM users');
+  const users = res.rows;
   return users;
 };
 
@@ -57,13 +59,15 @@ const findUsers = () => {
  * @param {string} Id - El id del usuario a actualizar
  * @returns {void}
  */
-const updateEmailVerify = (id) => {
-  const updateEmailVerifyQuery = db.prepare(`
+const updateEmailVerify = async (id) => {
+  await db.query(
+    `
     UPDATE users 
-    SET email_verified = 1
-    WHERE id = ?
-  `);
-  updateEmailVerifyQuery.run(id);
+    SET email_verified = true
+    WHERE id = $1
+  `, 
+  [id]
+);
 };
 
 const userRepository = {

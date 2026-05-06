@@ -51,10 +51,8 @@ userRouter.post('/', async (req, res, next) => {
     res.status(201).json(createdUser);
   } catch (error) {
     // Si el usuario fue creado pero hubo un error, eliminamos el usuario para que el email quede libre para reintentar.
-    if (createdUser) {
-      await userRepository.deleteUserById(createdUser.id);
-    }
-
+    if (createdUser) await userRepository.deleteUserById(createdUser.id);
+    
     // Responder con un error genérico
     next(error);
   }

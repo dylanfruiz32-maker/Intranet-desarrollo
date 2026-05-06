@@ -9,11 +9,12 @@ import db from '../../db/index.js';
  * @param {Session['user_id']} payload.userId - El id del usuario
  * @returns {Session} La session creada
  */
-const createSession = ({ jwtid, userId }) => {
-  const insertTokenQuery = db.prepare(
-    'INSERT INTO sessions (jwtid, user_id) VALUES (?,?) RETURNING *',
-  );
-  const createdSession = insertTokenQuery.get(jwtid, userId);
+const createSession = async ({ jwtid, userId }) => {
+  const res = await db.query('INSERT INTO sessions (jwtid, user_id) VALUES ($1,$2) RETURNING *',[
+    jwtid,
+    userId,
+  ]);
+  const createdSession = res.rows[0];
   return createdSession;
 };
 
@@ -23,9 +24,9 @@ const createSession = ({ jwtid, userId }) => {
  * @param {Session['jwtid']} payload.jwtid - El id del token
  * @returns {Session} La session encontrada
  */
-const findSessionByJwtId = ({ jwtid }) => {
-  const findSessionQuery = db.prepare('SELECT * FROM sessions WHERE jwtid = ?');
-  const session = findSessionQuery.get(jwtid);
+const findSessionByJwtId = async ({ jwtid }) => {
+  const res = await db.query('SELECT * FROM sessions WHERE jwtid = $1', [jwtid]);
+  const session = res.rows[0];
   return session;
 };
 
@@ -36,14 +37,14 @@ const findSessionByJwtId = ({ jwtid }) => {
  * @param {Session['id']} payload.id - El id de la session a actualizar
  * @returns {void}
  */
-const updateSessionJwtId = ({ jwtid, id }) => {
-  const updateSessionQuery = db.prepare(`
+const updateSessionJwtId = async ({ jwtid, id }) => {
+  await db.query(`
     UPDATE sessions
-    SET jwtid = ?
-    WHERE id = ?
-  `);
-
-  updateSessionQuery.run(jwtid, id);
+    SET jwtid = $1
+    WHERE id = $2
+  `, 
+  [jwtid, id]
+  );
 };
 
 /**
@@ -51,9 +52,8 @@ const updateSessionJwtId = ({ jwtid, id }) => {
  * @param {string} id - El id de la session a eliminar
  * @returns {void}
  */
-const deleteSession = (id) => {
-  const deleteSessionQuery = db.prepare('DELETE FROM sessions WHERE id = ?');
-  deleteSessionQuery.run(id);
+const deleteSession = async (id) => {
+  await db.query('DELETE FROM sessions WHERE id = $1', [id]);
 };
 
 const authRepository = { createSession, findSessionByJwtId, updateSessionJwtId, deleteSession };

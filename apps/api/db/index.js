@@ -1,3 +1,6 @@
-import Database from 'better-sqlite3';
-const db = new Database('contacts.db');
+import { Pool } from 'pg';
+
+const db = new Pool({
+    connectionString: process.env.DB_URI,
+});
 export default db;

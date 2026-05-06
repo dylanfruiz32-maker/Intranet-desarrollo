@@ -10,10 +10,12 @@ import db from '../../db/index.js';
  * @param {Contact['user_id']} payload.userId - El id del usuario que crea el contacto
  * @returns {Contact} El contacto creado
  */
-const createContact = ({ name, phone, userId }) => {
-  const createdContact = db
-    .prepare(`INSERT INTO contacts (name, phone, user_id) VALUES (?, ?, ?) RETURNING *`)
-    .get(name, phone, userId);
+const createContact = async({ name, phone, userId }) => {
+  const res = db.query(
+    `INSERT INTO contacts (name, phone, user_id) VALUES ($1, $2, $3) RETURNING *`,
+    [name, phone, userId]
+  );
+  const createdContact = res.rows[0];
   return createdContact;
 };
 
@@ -22,8 +24,9 @@ const createContact = ({ name, phone, userId }) => {
  * @param {Contact['user_id']} userId - El id del usuario
  * @returns {Contact[]} Los contactos del usuario
  */
-const getContacts = (userId) => {
-  const contacts = db.prepare(`SELECT * FROM contacts WHERE user_id = ?`).all(userId);
+const getContacts = async (userId) => {
+  const res = await db.query(`SELECT * FROM contacts WHERE user_id = $1`, [userId]);
+  const contacts = res.rows;
   return contacts;
 };
 
@@ -36,17 +39,17 @@ const getContacts = (userId) => {
  * @param {Contact['user_id']} payload.userId - El id del usuario que crea el contacto
  * @returns {Contact} El contacto actualizado
  */
-const updateContact = ({ id, name, phone, userId }) => {
-  const updatedContact = db
-    .prepare(
-      `
+const updateContact = async ({ id, name, phone, userId }) => {
+  const res = await db.query(
+    `
     UPDATE contacts
-    SET name = ?, phone = ?
-    WHERE id = ? AND user_id = ?
+    SET name = $1, phone = $2
+    WHERE id = $3 AND user_id = $4
     RETURNING *
     `,
-    )
-    .get(name, phone, id, userId);
+    [name, phone, id, userId],
+  );
+  const updatedContact = res.rows[0];
   return updatedContact;
 };
 
@@ -57,10 +60,12 @@ const updateContact = ({ id, name, phone, userId }) => {
  * @param {Contact['user_id']} payload.userId - El id del usuario que crea el contacto
  * @returns {Contact} El contacto eliminado
  */
-const deleteContact = ({ id, userId }) => {
-  const deletedContact = db
-    .prepare('DELETE FROM contacts WHERE id = ? AND user_id = ? RETURNING *')
-    .get(id, userId);
+const deleteContact = async ({ id, userId }) => {
+  const res = db.query('DELETE FROM contacts WHERE id = $1 AND user_id = $2 RETURNING *',[
+    id,
+    userId,
+  ]);
+  const deletedContact = res.rows[0];
   return deletedContact;
 };
 
