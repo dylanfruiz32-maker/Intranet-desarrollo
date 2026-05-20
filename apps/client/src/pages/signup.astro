@@ -2,9 +2,11 @@
 import Button from '../components/Button.astro';
 import Spinner from '../components/Spinner.astro';
 import PageLayout from '../layout/PageLayout.astro';
+import PrivateRoute from '../layout/PrivateRoute.astro';
 ---
 
-<PageLayout title="Registro de Intranet">
+<PageLayout title="Registro">
+  <PrivateRoute>
   <div class="flex items-center justify-center min-h-screen py-10">
     <form
       id="signup-form"
@@ -78,6 +80,7 @@ import PageLayout from '../layout/PageLayout.astro';
       </button>
     </form>
   </div>
+  </PrivateRoute>
 </PageLayout>
 
 <script>

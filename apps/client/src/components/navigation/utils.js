@@ -36,3 +36,11 @@ export const getButtons = (pathname) => {
 
   return buttons;
 };
+
+
+export const menuItems = [
+  { href: '/', label: '📊 Panel General' },
+  { href: '/inventory', label: '👟 Inventario' },
+  { href: '/ventas', label: '💰 Ventas' },
+  { href: '/configuracion', label: '⚙️ Configuración' },
+];

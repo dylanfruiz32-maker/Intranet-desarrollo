@@ -1,20 +1,435 @@
 ---
 import PageLayout from '../layout/PageLayout.astro';
+import PublicRoute from '../layout/PublicRoute.astro';
+import { menuItems } from '../components/navigation/utils.js';
+
+// 1. Simulación de datos del SaaS
+const nombreTienda = 'Perfumería & Calzado Elegance';
+const divisa = '$';
+
+const productosCriticos = [
+  {
+    id: 101,
+    nombre: 'Perfume Bleu de Chanel 100ml',
+    categoria: 'Perfumes',
+    stock: 2,
+    minimo: 5,
+  },
+  {
+    id: 102,
+    nombre: 'Zapatos Oxford Cuero Negro (Talla 42)',
+    categoria: 'Zapatos',
+    stock: 1,
+    minimo: 4,
+  },
+  {
+    id: 103,
+    nombre: 'Perfume Versace Eros Flame',
+    categoria: 'Perfumes',
+    stock: 0,
+    minimo: 3,
+  },
+  {
+    id: 104,
+    nombre: 'Tacones Aguja Rojo Pasión (Talla 38)',
+    categoria: 'Zapatos',
+    stock: 3,
+    minimo: 6,
+  },
+];
+
+const metricas = {
+  ventasHoy: '420.00',
+  totalProductos: 148,
+  alertasRestock: productosCriticos.length,
+};
 ---
 
 <PageLayout title="Inicio">
-  <main class="flex flex-col items-center justify-center p-4 gap-6 min-h-[calc(100vh-5rem)]">
-    <h1 class="text-5xl font-bold">Bienvenido a la demo del último módulo de EdTécnica</h1>
-    <p class="text-lg text-gray-700 dark:text-gray-300 max-w-2xl text-center">
-      En esta clase usamos <strong>Astro</strong> en el cliente y <strong>Express</strong> en el backend.
-      Puedes registrarte, iniciar sesión y gestionar tus contactos: crear, ver, editar y eliminar.
-    </p>
-    <p class="text-lg text-gray-700 dark:text-gray-300 max-w-2xl text-center">
-      Se aplican todos los principios de full-stack: rutas, validación, autenticación, persistencia
-      y buenas prácticas.
-    </p>
-    <p class="text-lg text-gray-700 dark:text-gray-300 max-w-2xl text-center">
-      ¡Ponte creativo — explora la app, prueba las funciones y aprende construyendo!
-    </p>
-  </main>
+  <PublicRoute>
+    <!-- CONTENEDOR GENERAL -->
+    <div class="flex min-h-screen">
+      <!-- BARRA LATERAL (SIDEBAR) -->
+      <aside
+        class="hidden w-64 flex-col justify-between border-r border-gray-200 bg-slate-900 p-6 text-white md:flex dark:border-gray-800"
+      >
+        <div>
+          <div class="mb-10 flex items-center gap-3">
+            <span class="text-2xl">📦</span>
+            <h2 class="text-xl font-bold tracking-tight">StockSaaS</h2>
+          </div>
+          
+          <!-- Menú Dinámico con JavaScript (Crea los enlaces automáticamente) -->
+          <nav id="sidebar-menu" class="flex flex-col gap-2">
+            {menuItems.map((item) => (
+              <a 
+                href={item.href} 
+                data-link={item.href} 
+                class="px-4 py-3 text-sm font-medium transition-colors rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        </div>
+        <div class="flex items-center gap-3 border-t border-slate-800 pt-4">
+          <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 font-bold text-white">
+            U
+          </div>
+          <div class="truncate">
+            <p class="truncate text-sm font-semibold">Administrador</p>
+            <p class="truncate text-xs text-slate-400">{nombreTienda}</p>
+          </div>
+        </div>
+      </aside>
+      <!-- CONTENIDO PRINCIPAL -->  
+      <main class="mx-auto w-full max-w-7xl flex-1 p-6 md:p-10">
+        <!-- ENCABEZADO -->
+        <header class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight text-gray-900 md:text-3xl dark:text-white">
+              Dashboard Comercial
+            </h1>
+            <p class="mt-1 text-sm text-gray-500 md:text-base dark:text-gray-400">
+              Estado actual de tus existencias y flujo de caja.
+            </p>
+          </div>
+          <div>
+            <!-- BUG FIX: Se añade el id="btn-registrar-venta" -->
+            <button
+              id="btn-registrar-venta"
+              class="w-full rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 sm:w-auto">
+              + Registrar Venta
+            </button>
+          </div>
+        </header>
+
+        <!-- TARJETAS DE MÉTRICAS (KPIs) -->
+        <section class="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- Tarjeta Ventas -->
+          <div
+            class="rounded-xl border-b border-x border-t-4 border-gray-200 border-t-emerald-500 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+          >
+            <div
+              class="mb-3 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+            >
+              <span>Ventas de Hoy</span>
+              <span class="text-xl">💵</span>
+            </div>
+            <!-- BUG FIX: Se añade el id="kpi-ventas" -->
+            <p id="kpi-ventas" class="text-3xl font-bold text-gray-900 dark:text-white">
+              {divisa}{metricas.ventasHoy}
+            </p>
+          </div>
+
+          <!-- Tarjeta Restock -->
+          <div
+            class="rounded-xl border-b border-x border-t-4 border-gray-200 border-t-red-500 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+          >
+            <div
+              class="mb-3 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+            >
+              <span>Alertas de Restock</span>
+              <span class="text-xl">⚠️</span>
+            </div>
+            <!-- BUG FIX: Se añade el id="kpi-restock" -->
+            <p id="kpi-restock" class="text-3xl font-bold text-gray-900 dark:text-white">
+              {metricas.alertasRestock}
+            </p>
+          </div>
+
+          <!-- Tarjeta Total Items -->
+          <div
+            class="rounded-xl border-b border-x border-t-4 border-gray-200 border-t-blue-500 bg-white p-6 shadow-sm sm:col-span-2 lg:col-span-1 dark:border-gray-700 dark:bg-gray-800"
+          >
+            <div
+              class="mb-3 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+            >
+              <span>Items Registrados</span>
+              <span class="text-xl">📦</span>
+            </div>
+            <p class="text-3xl font-bold text-gray-900 dark:text-white">
+              {metricas.totalProductos}
+            </p>
+          </div>
+        </section>
+
+        <!-- SECCIÓN DE LA TABLA -->
+        <section
+          class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+        >
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              🚨 Productos en Stock Crítico
+            </h3>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Artículos que requieren reposición inmediata para evitar quiebres de stock.
+            </p>
+          </div>
+
+          <div class="w-full overflow-x-auto">
+            <table class="w-full border-collapse text-left text-sm">
+              <thead>
+                <tr
+                  class="bg-gray-50 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:bg-gray-700/50 dark:text-gray-400"
+                >
+                  <th class="border-b border-gray-200 p-4 dark:border-gray-700">Producto</th>
+                  <th class="border-b border-gray-200 p-4 dark:border-gray-700">Categoría</th>
+                  <th class="border-b border-gray-200 p-4 dark:border-gray-700">Stock Actual</th>
+                  <th class="border-b border-gray-200 p-4 dark:border-gray-700">Mínimo</th>
+                  <th class="border-b border-gray-200 p-4 dark:border-gray-700">Acción</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                {
+                  productosCriticos.map((prod) => (
+                    <tr
+                      data-id={prod.id}
+                      class="product-row transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-700/30"
+                    >
+                      <td class="p-4 font-medium text-gray-900 dark:text-white">{prod.nombre}</td>
+                      <td class="p-4">
+                        <span class="rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                          {prod.categoria}
+                        </span>
+                      </td>
+                      <td
+                        class="stock-cell p-4 font-semibold"
+                        data-stock={prod.stock}
+                        data-min={prod.minimo}
+                      >
+                        <span
+                          class={
+                            prod.stock === 0 ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'
+                          }
+                        >
+                          {prod.stock} u.
+                        </span>
+                      </td>
+                      <td class="p-4 text-gray-600 dark:text-gray-400">{prod.minimo} u.</td>
+                      <td class="p-4">
+                        <button class="btn-restock rounded bg-slate-100 px-3 py-1.5 text-xs font-bold text-gray-800 transition-colors hover:bg-slate-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">
+                          🔄 Surtir +5
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- MODAL DE SIMULACIÓN DE VENTA (ACTUALIZADO CON SELECT) -->
+        <div
+          id="modal-venta"
+          class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+        >
+          <div class="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-800">
+            <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">
+              Simular Nueva Venta
+            </h2>
+            
+            <div class="mb-6 flex flex-col gap-4">
+              <!-- Selector de Producto -->
+              <div>
+                <label class="mb-1 block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                  Seleccionar Producto vendido
+                </label>
+                <select
+                  id="select-producto"
+                  class="w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="" data-precio="0">Seleccione un artículo</option>
+                  {productosCriticos.map((prod) => (
+                    <option value={prod.id} data-precio={prod.precio}>
+                      {prod.nombre} (Stock: {prod.stock})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <!-- Input del Monto (Relleno automático, pero EDITABLE) -->
+              <div>
+                <label class="mb-1 block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                  Monto de la venta ({divisa})
+                </label>
+                <input
+                  id="input-monto"
+                  type="number"
+                  step="0.01"
+                  value="0"
+                  class="w-full rounded-lg border border-gray-300 bg-transparent p-2.5 text-gray-900 outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+            </div>
+
+            <div class="flex justify-end gap-3">
+              <button
+                id="btn-cerrar-modal"
+                class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                Cancelar
+              </button>
+              <button
+                id="btn-confirmar-venta"
+                class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
+              >
+                Aplicar Venta
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </PublicRoute>
 </PageLayout>
+
+
+<script>
+  // ==========================================
+  // 1. LÓGICA PARA MARCAR EL BOTÓN ACTIVO
+  // ==========================================
+  const rutaActual = window.location.pathname;
+  const enlacesMenu = document.querySelectorAll('#sidebar-menu a');
+
+  enlacesMenu.forEach((enlace) => {
+    if (enlace.getAttribute('data-link') === rutaActual) {
+      enlace.classList.remove('rounded-lg', 'text-slate-400', 'hover:bg-slate-800');
+      enlace.classList.add('border-l-4', 'border-blue-500', 'bg-slate-800', 'text-white');
+    }
+  });
+
+  // ==========================================
+  // 2. CONTROL DEL MODAL DE VENTAS
+  // ==========================================
+  const modalVenta = document.getElementById('modal-venta');
+  const btnAbrirModal = document.getElementById('btn-registrar-venta');
+  const btnCerrarModal = document.getElementById('btn-cerrar-modal');
+  const selectProducto = document.getElementById('select-producto');
+  const inputMonto = document.getElementById('input-monto');
+  const btnConfirmarVenta = document.getElementById('btn-confirmar-venta');
+
+  // Abrir Modal
+  btnAbrirModal.addEventListener('click', () => {
+    modalVenta.classList.replace('hidden', 'flex');
+  });
+
+  // Cerrar Modal
+  const cerrarModalVenta = () => {
+    modalVenta.classList.replace('flex', 'hidden');
+    selectProducto.value = "";
+    inputMonto.value = "0";
+  };
+  btnCerrarModal.addEventListener('click', cerrarModalVenta);
+
+  // Escuchar cuando cambian el producto elegido para colocar el precio base
+  selectProducto.addEventListener('change', () => {
+    const opcionSeleccionada = selectProducto.options[selectProducto.selectedIndex];
+    const precio = opcionSeleccionada.getAttribute('data-precio');
+    
+    // Si selecciona el valor por defecto, ponemos 0. Si no, el precio del producto.
+    inputMonto.value = precio ? precio : "0";
+  });
+
+  // ==========================================
+  // 3. APLICAR LA VENTA COPIANDO EL PROCESO
+  // ==========================================
+  btnConfirmarVenta.addEventListener('click', () => {
+    const productoId = selectProducto.value;
+    const montoVenta = parseFloat(inputMonto.value);
+
+    if (!productoId) {
+      alert("Por favor, selecciona un producto para registrar la venta.");
+      return;
+    }
+
+    // Buscar la fila del producto en la tabla usando el ID
+    const filaProducto = document.querySelector(`.product-row[data-id="${productoId}"]`);
+    
+    if (filaProducto) {
+      const celdaStock = filaProducto.querySelector('.stock-cell');
+      let stockActual = parseInt(celdaStock.getAttribute('data-stock'));
+
+      // Validar si hay existencias disponibles
+      if (stockActual <= 0) {
+        alert("❌ ¡No puedes vender este producto! El stock ya se encuentra en 0 u.");
+        return;
+      }
+
+      // 1. Descontar 1 unidad del stock
+      stockActual -= 1;
+      celdaStock.setAttribute('data-stock', stockActual.toString());
+      
+      const etiquetaSpan = celdaStock.querySelector('span');
+      etiquetaSpan.textContent = `${stockActual} u.`;
+
+      // 2. Si llega a cero, pintarlo en rojo crítico
+      if (stockActual === 0) {
+        etiquetaSpan.className = "text-red-500 font-bold";
+      }
+
+      // 3. Sumar el monto al KPI financiero superior
+      const kpiVentas = document.getElementById('kpi-ventas');
+      const ventasActuales = parseFloat(kpiVentas.textContent.replace('$', ''));
+      kpiVentas.textContent = `$${(ventasActuales + montoVenta).toFixed(2)}`;
+
+      // 4. Recalcular las alertas críticas del dashboard
+      recalcularAlertasRestock();
+      
+      // Cerrar y limpiar
+      cerrarModalVenta();
+    }
+  });
+
+  // ==========================================
+  // 4. LÓGICA DE REABASTECIMIENTO (SURTIR +5)
+  // ==========================================
+  const botonesRestock = document.querySelectorAll('.btn-restock');
+
+  botonesRestock.forEach((boton) => {
+    boton.addEventListener('click', (e) => {
+      const objetivo = e.target;
+      const filaProducto = objetivo.closest('.product-row');
+      const celdaStock = filaProducto.querySelector('.stock-cell');
+      
+      let stockActual = parseInt(celdaStock.getAttribute('data-stock'));
+      
+      // Aumentar stock de 5 en 5
+      stockActual += 5;
+      celdaStock.setAttribute('data-stock', stockActual.toString());
+
+      const etiquetaSpan = celdaStock.querySelector('span');
+      etiquetaSpan.textContent = `${stockActual} u.`;
+
+      // Quitar estilo de alerta si ya superó el cero
+      if (stockActual > 0) {
+        etiquetaSpan.className = "text-gray-700 dark:text-gray-300";
+      }
+
+      // Volver a calcular alertas en tiempo real
+      recalcularAlertasRestock();
+    });
+  });
+
+  // ==========================================
+  // 5. FUNCIÓN CENTRALIZADA PARA RECALCULAR ALERTAS
+  // ==========================================
+  function recalcularAlertasRestock() {
+    const todasLasFilas = document.querySelectorAll('.product-row');
+    let nuevasAlertas = 0;
+
+    todasLasFilas.forEach((fila) => {
+      const celdaStock = fila.querySelector('.stock-cell');
+      const stock = parseInt(celdaStock.getAttribute('data-stock'));
+      const minimo = parseInt(celdaStock.getAttribute('data-min'));
+
+      // Si el stock actual es menor al mínimo requerido, cuenta como alerta
+      if (stock < minimo) {
+        nuevasAlertas++;
+      }
+    });
+
+    // Pintar la nueva métrica en la tarjeta superior de advertencia
+    document.getElementById('kpi-restock').textContent = nuevasAlertas.toString();
+  }
+</script>

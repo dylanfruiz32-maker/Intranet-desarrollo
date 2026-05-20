@@ -2,9 +2,11 @@
 import ContactList from '../features/contacts/ContactList.astro';
 import CreateContact from '../features/contacts/CreateContact.astro';
 import PageLayout from '../layout/PageLayout.astro';
+import PrivateRoute from '../layout/PrivateRoute.astro';
 ---
 
 <PageLayout>
+  <PrivateRoute>
   <main
     id="main-container"
     class="flex flex-col p-4 max-w-360 mx-auto gap-8 md:items-center min-h-[calc(100vh-5rem)]"
@@ -12,9 +14,5 @@ import PageLayout from '../layout/PageLayout.astro';
     <CreateContact />
     <ContactList />
   </main>
+  </PrivateRoute>
 </PageLayout>
-
-<script>
-  import authService from '../features/auth/auth.service';
-  authService.getLoggedUser();
-</script>
