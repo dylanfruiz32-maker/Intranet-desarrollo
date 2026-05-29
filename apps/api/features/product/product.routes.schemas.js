@@ -9,6 +9,7 @@ export const createProductRouteSchema = {
     cost: true,
     current_stock: true,
     minimum_stock: true,
+    category_id: true,
   }),
   params: null,
   query: null,
@@ -36,6 +37,7 @@ export const updateProductRouteSchema = {
     cost: true,
     current_stock: true,
     minimum_stock: true,
+    category_id: true,
   }).partial(),
   params: z.object({
     id: z.coerce.number({ error: 'No es un id valido' }),
@@ -46,7 +48,7 @@ export const updateProductRouteSchema = {
 export const deleteProductRouteSchema = {
   body: null,
   params: z.object({
-    id: z.coercer.number({ error: 'No es un id valido' }),
+    id: z.coerce.number({ error: 'No es un id valido' }),
   }),
   query: null,
 }

@@ -51,14 +51,45 @@ await db.query(`
 };
 
 /**
+ * Crea la tabla de categorías en la base de datos
+ * @returns {void}
+ */
+const createCategoriesTable = async () => {
+  await db.query(`
+    CREATE TABLE categories (
+      id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+      user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      name TEXT NOT NULL
+    )
+  `);
+  console.log('Tabla de categorías creada!');
+};
+
+/**
+ * Crea la tabla de atributos de las categorías
+ * @returns {void}
+ */
+const createCategoryAttributesTable = async () => {
+  await db.query(`
+    CREATE TABLE category_attributes (
+      id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+      category_id BIGINT NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+      name TEXT NOT NULL
+    )
+  `);
+  console.log('Tabla de atributos de categorías creada!');
+};
+
+/**
  * Crea la tabla de productos en la base de datos
  * @returns {void}
  */
 const createProductsTable = async () => {
   await db.query(`
-    CREATE TABLE IF NOT EXISTS products (
+    CREATE TABLE products (
       id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
       user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE, 
+      category_id BIGINT REFERENCES categories(id) ON DELETE SET NULL,
       name TEXT NOT NULL,
       sku TEXT NOT NULL,
       price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
@@ -67,7 +98,7 @@ const createProductsTable = async () => {
       minimum_stock INTEGER NOT NULL DEFAULT 5,
       deleted_at TIMESTAMP WITH TIME ZONE,
       UNIQUE (user_id, sku)
-    );
+    )
   `);
   console.log('Tabla de productos creada!');
 };
@@ -77,6 +108,9 @@ const createProductsTable = async () => {
  * @returns {void}
  */
 const resetDb = async () => {
+  await db.query('DROP TABLE IF EXISTS category_attributes');
+  await db.query('DROP TABLE IF EXISTS products');
+  await db.query('DROP TABLE IF EXISTS categories');
   await db.query('DROP TABLE IF EXISTS contacts');
   await db.query('DROP TABLE IF EXISTS sessions');
   await db.query('DROP TABLE IF EXISTS users');
@@ -93,13 +127,15 @@ export const createTables = async () => {
 
   await resetDb();
   await createUsersTable();
+  await createCategoriesTable();
   await createContactsTable();
   await createSessionTable();
+  await createCategoryAttributesTable();
   await createProductsTable();
 
+  console.log('Tablas creadas');
   await db.end();
   process.exit(1);
-  console.log('Tablas creadas');
 };
 
 createTables();

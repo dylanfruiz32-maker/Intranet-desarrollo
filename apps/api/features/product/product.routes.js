@@ -15,6 +15,7 @@ productRouter.post('/', async (req, res) => {
   //2.Guardarlo en db
   const createdProduct = await productRepository.createProduct({
     userId: req.user.id,
+    category_id: body.category_id,
     name: body.name,
     sku: body.sku,
     price: body.price,
@@ -45,6 +46,7 @@ productRouter.put('/:id', async (req, res) => {
   //2. Guardarlo en db 
   const updatedProduct = await productRepository.updateProduct({
     userId: req.user.id,
+    category_id: body.category_id,
     name: body.name,
     sku: body.sku,
     price: body.price,

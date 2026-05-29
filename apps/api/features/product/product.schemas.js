@@ -3,6 +3,7 @@ import * as z from 'zod';
 export const productSchema = z.object({
     id: z.number(),
     user_id: z.number(),
+    category_id: z.number().nullable(),
     name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
     sku: z.string().min(3, 'El SKU debe tener al menos 3 caracteres' ),
     price: z.number().nonnegative('El precio no puede ser negativo'),
