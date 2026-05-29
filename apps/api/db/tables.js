@@ -51,6 +51,28 @@ await db.query(`
 };
 
 /**
+ * Crea la tabla de productos en la base de datos
+ * @returns {void}
+ */
+const createProductsTable = async () => {
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS products (
+      id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+      user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE, 
+      name TEXT NOT NULL,
+      sku TEXT NOT NULL,
+      price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
+      cost DECIMAL(10,2) NOT NULL CHECK (cost >= 0),
+      current_stock INTEGER NOT NULL DEFAULT 0,
+      minimum_stock INTEGER NOT NULL DEFAULT 5,
+      deleted_at TIMESTAMP WITH TIME ZONE,
+      UNIQUE (user_id, sku)
+    );
+  `);
+  console.log('Tabla de productos creada!');
+};
+
+/**
  * Elimina las tablas de la base de datos para reiniciar el estado de la base de datos
  * @returns {void}
  */
@@ -73,6 +95,7 @@ export const createTables = async () => {
   await createUsersTable();
   await createContactsTable();
   await createSessionTable();
+  await createProductsTable();
 
   await db.end();
   process.exit(1);
